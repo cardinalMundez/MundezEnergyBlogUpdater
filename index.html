@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog Submission</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:      #1a1814;
+    --ink2:     #5a5650;
+    --ink3:     #9a9590;
+    --paper:    #faf9f6;
+    --cream:    #f3f1eb;
+    --rule:     #e2dfd6;
+    --accent:   #2d5a3d;
+    --accent2:  #c8863a;
+    --red:      #b94040;
+    --success:  #2d6e45;
+    --radius:   6px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding: 1.25rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo {
+    font-family: 'Lora', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .logo span { color: var(--accent); }
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    background: var(--cream);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    color: var(--ink2);
+  }
+
+  /* ── Layout ── */
+  main {
+    flex: 1;
+    max-width: 780px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+  }
+
+  .page-title {
+    font-family: 'Lora', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.03em;
+  }
+  .page-sub {
+    color: var(--ink2);
+    font-size: 0.92rem;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  /* ── Form ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+  .field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .field.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink2);
+  }
+  label .req { color: var(--accent2); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="date"],
+  textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 0.65rem 0.85rem;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+  }
+  input[type="text"]:focus,
+  input[type="date"]:focus,
+  textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(45,90,61,0.1);
+  }
+  textarea { resize: vertical; line-height: 1.65; min-height: 200px; }
+
+  /* ── WAV upload ── */
+  .wav-zone {
+    border: 1.5px dashed var(--rule);
+    border-radius: var(--radius);
+    background: var(--cream);
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+  .wav-zone:hover, .wav-zone.drag { border-color: var(--accent); background: #edf5f0; }
+  .wav-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .wav-icon {
+    width: 40px; height: 40px; margin: 0 auto 0.75rem;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wav-icon svg { width: 20px; height: 20px; fill: #fff; }
+  .wav-label { font-size: 0.9rem; color: var(--ink2); }
+  .wav-label strong { color: var(--ink); }
+  .wav-hint { font-size: 0.78rem; color: var(--ink3); margin-top: 0.3rem; }
+  .wav-selected {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    background: #edf5f0;
+    border: 1px solid #b6d9c4;
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+    color: var(--success);
+  }
+  .wav-selected svg { width: 18px; height: 18px; flex-shrink: 0; fill: var(--success); }
+  .wav-selected .wav-name { font-weight: 500; word-break: break-all; }
+  .wav-selected .wav-clear {
+    margin-left: auto; cursor: pointer; color: var(--ink3);
+    font-size: 1.1rem; line-height: 1; background: none; border: none;
+    padding: 0; flex-shrink: 0;
+  }
+  .wav-clear:hover { color: var(--red); }
+
+  /* ── Preview counter ── */
+  .preview-counter { font-size: 0.75rem; color: var(--ink3); text-align: right; margin-top: 0.25rem; }
+  .preview-counter.over { color: var(--red); }
+
+  /* ── Divider ── */
+  .divider {
+    grid-column: 1 / -1;
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0.5rem 0;
+  }
+  .section-label {
+    grid-column: 1 / -1;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    padding-top: 0.25rem;
+  }
+
+  /* ── Submit ── */
+  .submit-row {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+  .btn-submit {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.75rem 2rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-submit:hover { background: #245032; }
+  .btn-submit:active { transform: scale(0.98); }
+  .btn-submit:disabled { background: var(--ink3); cursor: not-allowed; }
+  .btn-submit svg { width: 16px; height: 16px; fill: #fff; }
+
+  .btn-reset {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    color: var(--ink2);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 0.7rem 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-reset:hover { border-color: var(--ink3); color: var(--ink); }
+
+  /* ── Status ── */
+  .status-box {
+    display: none;
+    grid-column: 1 / -1;
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .status-box.success {
+    background: #edf5f0;
+    border: 1px solid #b6d9c4;
+    color: var(--success);
+  }
+  .status-box.error {
+    background: #fdf2f2;
+    border: 1px solid #f0c0c0;
+    color: var(--red);
+  }
+  .status-box strong { display: block; margin-bottom: 0.25rem; font-weight: 500; }
+  .status-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    opacity: 0.75;
+    margin-top: 0.35rem;
+  }
+
+  /* ── Spinner ── */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Responsive ── */
+  @media (max-width: 560px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: 1; }
+    .submit-row { flex-direction: column; align-items: stretch; }
+    main { padding: 2rem 1.25rem 4rem; }
+    header { padding: 1rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Blog<span>Manager</span></div>
+  <div class="badge">Submission Portal</div>
+</header>
+
+<main>
+  <h1 class="page-title">New Article</h1>
+  <p class="page-sub">Fill in the details below. Your WAV file will be saved to Drive automatically and linked in the sheet.</p>
+
+  <div class="form-grid">
+
+    <!-- Title -->
+    <div class="field full">
+      <label>Title <span class="req">*</span></label>
+      <input type="text" id="title" placeholder="Enter article title…" autocomplete="off">
+    </div>
+
+    <!-- Author + Date -->
+    <div class="field">
+      <label>Author <span class="req">*</span></label>
+      <input type="text" id="author" placeholder="Your name">
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="date" id="date">
+    </div>
+
+    <hr class="divider">
+    <p class="section-label">Content</p>
+
+    <!-- Main content -->
+    <div class="field full">
+      <label>Article Body <span class="req">*</span></label>
+      <textarea id="content" placeholder="Write your article here…"></textarea>
+    </div>
+
+    <!-- Preview -->
+    <div class="field full">
+      <label>Preview <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional — auto-generated if blank)</span></label>
+      <textarea id="preview" rows="3" style="min-height:80px" placeholder="Short excerpt shown on listing pages (max 200 chars)…" maxlength="220"></textarea>
+      <div class="preview-counter" id="prev-count">0 / 200</div>
+    </div>
+
+    <hr class="divider">
+    <p class="section-label">Audio</p>
+
+    <!-- WAV upload -->
+    <div class="field full">
+      <label>WAV File</label>
+      <div class="wav-zone" id="wav-zone">
+        <input type="file" id="wav-file" accept=".wav,audio/wav,audio/x-wav">
+        <div class="wav-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+        </div>
+        <div class="wav-label"><strong>Click to choose</strong> or drag a WAV here</div>
+        <div class="wav-hint">Only .wav files · will be saved as WavN.wav in Drive</div>
+      </div>
+      <div class="wav-selected" id="wav-selected">
+        <svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+        <span class="wav-name" id="wav-name"></span>
+        <button class="wav-clear" id="wav-clear" title="Remove file">&#x2715;</button>
+      </div>
+    </div>
+
+    <!-- Status box -->
+    <div class="status-box" id="status-box">
+      <strong id="status-title"></strong>
+      <span id="status-body"></span>
+      <div class="status-meta" id="status-meta"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="submit-row">
+      <button class="btn-submit" id="btn-submit">
+        <svg viewBox="0 0 24 24"><path d="M2 20h20v2H2v-2zm10-18L4 10h4v6h8v-6h4L12 2z"/></svg>
+        Publish Article
+      </button>
+      <button class="btn-reset" id="btn-reset">Clear form</button>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ── CONFIGURE THIS ────────────────────────────────────────────
+const SCRIPT_URL = 'YOUR_WEB_APP_URL_HERE'; // Paste your deployed Apps Script URL
+// ─────────────────────────────────────────────────────────────
+
+const $ = id => document.getElementById(id);
+
+// Set today's date as default
+$('date').valueAsDate = new Date();
+
+// ── Preview character counter ─────────────────────────────────
+$('preview').addEventListener('input', () => {
+  const len = $('preview').value.length;
+  const el  = $('prev-count');
+  el.textContent = `${len} / 200`;
+  el.classList.toggle('over', len > 200);
+});
+
+// ── WAV drag & drop ───────────────────────────────────────────
+const zone = $('wav-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) setWav(f);
+});
+$('wav-file').addEventListener('change', e => {
+  if (e.target.files[0]) setWav(e.target.files[0]);
+});
+$('wav-clear').addEventListener('click', e => {
+  e.stopPropagation();
+  clearWav();
+});
+
+let wavFile = null;
+function setWav(f) {
+  if (!f.name.toLowerCase().endsWith('.wav')) {
+    showStatus('error', 'Wrong file type', 'Please select a .wav audio file.');
+    return;
+  }
+  wavFile = f;
+  $('wav-name').textContent = `${f.name}  (${(f.size / 1024).toFixed(1)} KB)`;
+  $('wav-selected').style.display = 'flex';
+}
+function clearWav() {
+  wavFile = null;
+  $('wav-file').value = '';
+  $('wav-selected').style.display = 'none';
+  $('wav-name').textContent = '';
+}
+
+// ── Form reset ────────────────────────────────────────────────
+$('btn-reset').addEventListener('click', () => {
+  ['title','author','content','preview'].forEach(id => $(id).value = '');
+  $('date').valueAsDate = new Date();
+  clearWav();
+  hideStatus();
+  $('prev-count').textContent = '0 / 200';
+});
+
+// ── Submit ────────────────────────────────────────────────────
+$('btn-submit').addEventListener('click', async () => {
+  hideStatus();
+
+  const title   = $('title').value.trim();
+  const author  = $('author').value.trim();
+  const content = $('content').value.trim();
+
+  // Validation
+  if (!title)   return flash('title',   'Please enter a title.');
+  if (!author)  return flash('author',  'Please enter the author name.');
+  if (!content) return flash('content', 'Article body cannot be empty.');
+
+  // Encode WAV to base64 if provided
+  let wavBase64 = '';
+  let wavMime   = 'audio/wav';
+  if (wavFile) {
+    wavBase64 = await toBase64(wavFile);
+    wavMime   = wavFile.type || 'audio/wav';
+  }
+
+  const payload = {
+    title,
+    author,
+    content,
+    date:      $('date').value,
+    preview:   $('preview').value.trim(),
+    wavBase64,
+    wavMime
+  };
+
+  // UI: loading state
+  const btn = $('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Saving…';
+
+  try {
+    const res  = await fetch(SCRIPT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+    const json = await res.json();
+
+    if (json.success) {
+      showStatus(
+        'success',
+        'Article published!',
+        `Saved as article #${json.num}.${json.audioId ? ' WAV linked to sheet.' : ''}`,
+        json.audioId ? `Drive audio ID: ${json.audioId}` : ''
+      );
+      // Optionally clear form after success
+      // $('btn-reset').click();
+    } else {
+      showStatus('error', 'Server error', json.error || 'Unknown error from Apps Script.');
+    }
+  } catch (err) {
+    showStatus('error', 'Network error', err.message || 'Could not reach the Apps Script endpoint.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#fff"><path d="M2 20h20v2H2v-2zm10-18L4 10h4v6h8v-6h4L12 2z"/></svg> Publish Article';
+});
+
+// ── Helpers ───────────────────────────────────────────────────
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload  = () => resolve(r.result.split(',')[1]);
+    r.onerror = () => reject(new Error('File read failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+function showStatus(type, title, body, meta) {
+  const box = $('status-box');
+  box.className = `status-box ${type}`;
+  $('status-title').textContent = title;
+  $('status-body').textContent  = body  || '';
+  $('status-meta').textContent  = meta  || '';
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function hideStatus() { $('status-box').style.display = 'none'; }
+
+function flash(fieldId, msg) {
+  const el = $(fieldId);
+  el.style.borderColor = 'var(--red)';
+  el.focus();
+  showStatus('error', 'Missing field', msg);
+  el.addEventListener('input', () => { el.style.borderColor = ''; }, { once: true });
+}
+</script>
+</body>
+</html>
