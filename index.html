@@ -406,6 +406,35 @@
     }
     .reset-btn:hover { background: var(--bg); color: var(--text-2); border-color: #c0ccd8; }
 
+    .notify-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.5rem;
+      border-radius: 999px;
+      border: 1.5px solid var(--teal);
+      background: white;
+      color: var(--teal);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .notify-btn:hover:not(:disabled) {
+      background: var(--teal-light);
+      border-color: var(--teal-dark);
+      color: var(--teal-dark);
+    }
+    .notify-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .notify-btn.loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
     /* ── TOAST ── */
     .toast {
       position: fixed;
@@ -658,6 +687,9 @@
           <span class="btn-spinner"></span>
           <span class="btn-text">🚀 Publish Article</span>
         </button>
+        <button class="notify-btn" id="notifyBtn" disabled title="Manually send email notification to all subscribers">
+          📧 Notify Subscribers
+        </button>
         <button class="reset-btn" id="resetBtn">↺ Reset form</button>
         <span style="font-size:0.75rem;color:var(--text-3);margin-left:auto" id="submitHint">Fill all required fields to publish</span>
       </div>
@@ -736,6 +768,7 @@ const progressFill   = document.getElementById('progressFill');
 const progressPct    = document.getElementById('progressPct');
 const progressLabel  = document.getElementById('progressLabel');
 const submitBtn      = document.getElementById('submitBtn');
+const notifyBtn      = document.getElementById('notifyBtn');
 const resetBtn       = document.getElementById('resetBtn');
 const submitHint     = document.getElementById('submitHint');
 const autoPreviewBtn = document.getElementById('autoPreviewBtn');
@@ -810,6 +843,13 @@ function setNextEntry(id, num) {
 
   nextPills.style.display = 'flex';
   setStatus('ready', `Ready — next entry will be #${nextNum} (ID ${nextId})`);
+  
+  // Enable notify button if there's a previous article (num > 1)
+  if (num > 1) {
+    notifyBtn.disabled = false;
+    notifyBtn.title = `Send notification about Article #${num - 1} to all subscribers`;
+  }
+  
   validateForm();
 }
 
@@ -1090,6 +1130,61 @@ function escHtml(str) {
   return String(str).replace(/[&<>"]/g, m =>
     ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])
   );
+}
+
+// ============================================================
+// NOTIFY SUBSCRIBERS BUTTON
+// ============================================================
+notifyBtn.addEventListener('click', notifySubscribers);
+
+async function notifySubscribers() {
+  if (!nextNum || nextNum <= 1) {
+    showToast('No published articles to notify about yet.', 'error');
+    return;
+  }
+
+  const lastArticleNum = nextNum - 1; // The last published article
+  const confirmed = confirm(`Send email notification to all subscribers about Article #${lastArticleNum}?\n\nThis will notify everyone on the subscriber list.`);
+  if (!confirmed) return;
+
+  notifyBtn.disabled = true;
+  notifyBtn.classList.add('loading');
+  notifyBtn.textContent = '📧 Sending…';
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'notifySubscribers',
+        articleNum: lastArticleNum
+      })
+    });
+
+    let result;
+    try { 
+      result = await res.json(); 
+    } catch(e) { 
+      result = { success: true, message: 'Request sent (no-cors mode)' };
+    }
+
+    if (result.success) {
+      const msg = result.subscriberCount !== undefined 
+        ? `✅ Notified ${result.subscriberCount} subscriber${result.subscriberCount === 1 ? '' : 's'}!`
+        : '✅ Notification sent!';
+      showToast(msg, 'success');
+    } else if (result.alreadySent) {
+      showToast(`⚠️  ${result.message}`, 'warning');
+    } else {
+      showToast(`❌ ${result.error || result.message || 'Failed to send notifications'}`, 'error');
+    }
+
+  } catch (err) {
+    showToast(`❌ Error: ${err.message}`, 'error');
+  } finally {
+    notifyBtn.disabled = false;
+    notifyBtn.classList.remove('loading');
+    notifyBtn.textContent = '📧 Notify Subscribers';
+  }
 }
 
 // ── TOAST ──
